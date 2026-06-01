@@ -38,6 +38,8 @@ func TestNetHTTP(t *testing.T) {
 		{"POST", "/posts", "handlers.Create", "handlers/handlers.go"},
 		{route.VerbUnknown, "/legacy", "handlers.Index", "handlers/handlers.go"},
 		{"DELETE", "/posts/{id}", "func", "main.go"},
+		{"GET", "/healthz", "handlers.Index", "handlers/handlers.go"},
+		{"GET", "/api/comments", "handlers.List", "handlers/handlers.go"},
 	}
 	for _, w := range want {
 		if !got[w] {

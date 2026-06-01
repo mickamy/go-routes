@@ -2,6 +2,7 @@ package framework
 
 import (
 	"go/ast"
+	"go/constant"
 	"go/token"
 	"go/types"
 	"strconv"
@@ -56,7 +57,7 @@ func (e netHTTP) routeFrom(pkg *packages.Package, l loader.Loaded, call *ast.Cal
 		return route.Route{}, false
 	}
 
-	verb, path := patternFrom(call.Args[0])
+	verb, path := patternFrom(pkg, call.Args[0])
 	handler, file, line := resolveHandler(pkg, l, call.Args[1])
 
 	return route.Route{
@@ -77,8 +78,8 @@ func isNetHTTPRegistration(fn *types.Func) bool {
 	return fn.Name() == "HandleFunc" || fn.Name() == "Handle"
 }
 
-func patternFrom(expr ast.Expr) (verb, path string) {
-	raw, ok := stringLiteral(expr)
+func patternFrom(pkg *packages.Package, expr ast.Expr) (verb, path string) {
+	raw, ok := stringValue(pkg, expr)
 	if !ok {
 		return route.VerbUnknown, "<dynamic>"
 	}
@@ -102,6 +103,19 @@ func stripHost(s string) string {
 	}
 
 	return s
+}
+
+// stringValue resolves expr to a string, preferring the type checker's constant
+// folding (so named constants and constant concatenations like apiBase+"/posts"
+// resolve) and falling back to a direct string literal.
+func stringValue(pkg *packages.Package, expr ast.Expr) (string, bool) {
+	if pkg != nil && pkg.TypesInfo != nil {
+		if tv, ok := pkg.TypesInfo.Types[expr]; ok && tv.Value != nil && tv.Value.Kind() == constant.String {
+			return constant.StringVal(tv.Value), true
+		}
+	}
+
+	return stringLiteral(expr)
 }
 
 func stringLiteral(expr ast.Expr) (string, bool) {
