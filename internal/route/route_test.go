@@ -23,6 +23,9 @@ func TestJoinPath(t *testing.T) {
 		{name: "root only", prefix: "", segment: "/", want: "/"},
 		{name: "prefix only", prefix: "/api", segment: "", want: "/api"},
 		{name: "param segment", prefix: "/posts", segment: "/:id", want: "/posts/:id"},
+		{name: "trailing slash preserved", prefix: "/api", segment: "/posts/", want: "/api/posts/"},
+		{name: "trailing slash root segment", prefix: "/static", segment: "/", want: "/static/"},
+		{name: "empty segment keeps prefix", prefix: "/api/", segment: "", want: "/api/"},
 	}
 
 	for _, tt := range tests {

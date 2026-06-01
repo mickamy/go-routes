@@ -20,10 +20,19 @@ type Route struct {
 
 // JoinPath concatenates a group prefix and a route segment into a single clean
 // path, collapsing duplicated slashes so "/api/" + "/posts" yields "/api/posts".
+// A trailing slash on the segment is preserved, since it is semantically
+// significant in net/http (a subtree match) and most routers.
 func JoinPath(prefix, segment string) string {
+	if segment == "" {
+		return prefix
+	}
+
 	joined := strings.TrimRight(prefix, "/") + "/" + strings.TrimLeft(segment, "/")
 	if joined == "/" {
 		return "/"
+	}
+	if strings.HasSuffix(segment, "/") {
+		return joined
 	}
 
 	return strings.TrimRight(joined, "/")
