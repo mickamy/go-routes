@@ -116,6 +116,10 @@ func unwrap(expr ast.Expr) ast.Expr {
 }
 
 func referencedObject(pkg *packages.Package, expr ast.Expr) types.Object {
+	if pkg == nil || pkg.TypesInfo == nil {
+		return nil
+	}
+
 	switch e := expr.(type) {
 	case *ast.Ident:
 		return pkg.TypesInfo.Uses[e]
