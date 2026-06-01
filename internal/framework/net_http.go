@@ -24,6 +24,9 @@ func (netHTTP) Name() string { return "net/http" }
 func (e netHTTP) Extract(l loader.Loaded) ([]route.Route, error) {
 	var routes []route.Route
 	for _, pkg := range l.Packages {
+		if pkg.TypesInfo == nil {
+			continue
+		}
 		for _, file := range pkg.Syntax {
 			ast.Inspect(file, func(n ast.Node) bool {
 				call, ok := n.(*ast.CallExpr)
